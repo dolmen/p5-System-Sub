@@ -36,12 +36,16 @@ sub import
         my $name = shift;
         # Must be a scalar
         _croak "invalid arg: SCALAR expected" unless defined ref $name && ! ref $name;
-        my $fq_name = $pkg.'::'.$name;
-        #print "$fq_name\n";
+        my $fq_name;
+        if (index($name, ':') > 0) {
+            $fq_name = $name;
+            $name = substr($fq_name, 1+rindex($fq_name, ':'));
+        } else {
+            $fq_name = $pkg.'::'.$name;
+        }
 
         if ($name eq 'AUTOLOAD') {
             no strict 'refs';
-            #*{$fq_name} = subname $fq_name, _build_AUTOLOAD($pkg);
             *{$fq_name} = \&_AUTOLOAD;
             next
         }
