@@ -51,31 +51,34 @@ sub import
         }
 
         my $cmd = $name;
-        my @args;
+        my $args;
         my %options;
-        my $options = (@_ && ref $_[0]) ? shift : [];
-        while (@$options) {
-            my $opt = shift @$options;
-            if ($opt eq '--') {
-                _croak 'duplicate @ARGV' if $options{'@ARGV'};
-                $options{'@ARGV'} = $options;
-                last
-            } elsif ($opt eq '$0') {
-                $cmd = shift @$options;
-            } elsif ($opt eq '@ARGV') {
-                @args = @{ shift @$options };
-            } elsif (! exists ($OPTIONS{$opt})) {
-                _carp "unknown option $opt";
-            } elsif (defined $OPTIONS{$opt}) {
-                my $value = shift @$options;
-                if (ref $OPTIONS{$opt}) {
-                    _croak "invalid value for option $opt"
-                } elsif (ref($value) ne $OPTIONS{$opt}) {
-                    _croak "invalid value for option $opt"
+        if (@_ && ref $_[0]) {
+            my $options = shift;
+            while (@$options) {
+                my $opt = shift @$options;
+                if ($opt eq '--') {
+                    _croak 'duplicate @ARGV' if $args;
+                    $args = $options;
+                    last
+                } elsif ($opt eq '$0') {
+                    $cmd = shift @$options;
+                } elsif ($opt eq '@ARGV') {
+                    _croak 'invalid @ARGV' if ref($options->[0]) ne 'ARRAY';
+                    $args = shift @$options;
+                } elsif (! exists ($OPTIONS{$opt})) {
+                    _carp "unknown option $opt";
+                } elsif (defined $OPTIONS{$opt}) {
+                    my $value = shift @$options;
+                    if (ref $OPTIONS{$opt}) {
+                        _croak "invalid value for option $opt"
+                    } elsif (ref($value) ne $OPTIONS{$opt}) {
+                        _croak "invalid value for option $opt"
+                    }
+                    $options{$opt} = $value;
+                } else {
+                    $options{$opt} = 1;
                 }
-                $options{$opt} = $value;
-            } else {
-                $options{$opt} = 1;
             }
         }
 
@@ -87,7 +90,7 @@ sub import
         if (0) {
             $sub = sub { _croak "'$name' not found in PATH" };
         } else {
-            $sub = _build_sub($name, [ $cmd, @args ], \%options);
+            $sub = _build_sub($name, [ $cmd, ($args ? @$args : ())], \%options);
         }
 
         no strict 'refs';
