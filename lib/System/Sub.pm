@@ -3,24 +3,25 @@ use warnings;
 package System::Sub;
 
 use File::Which ();
-use Sub::Name ();
+use Sub::Name 'subname';
+use Symbol 'gensym';
+use IPC::Run qw(start finish);
+
 
 my %OPTIONS = (
     # Value is the expected ref of the option value
     # undef is no value
-    '$0' => '',
-    '@ARGV' => 'HASHREF',
     '>' => '',
     '<' => '',
 );
 
-sub croak
+sub _croak
 {
     require Carp;
-    goto &Carp::croak;
+    goto &Carp::croak
 }
 
-sub carp
+sub _carp
 {
     require Carp;
     goto &Carp::carp
@@ -34,46 +35,143 @@ sub import
     while (@_) {
         my $name = shift;
         # Must be a scalar
-        croak "invalid arg: SCALAR expected" unless defined ref $cmd && ! ref $cmd;
+        _croak "invalid arg: SCALAR expected" unless defined ref $name && ! ref $name;
+        my $fq_name = $pkg.'::'.$name;
+        #print "$fq_name\n";
+
+        if ($name eq 'AUTOLOAD') {
+            no strict 'refs';
+            #*{$fq_name} = subname $fq_name, _build_AUTOLOAD($pkg);
+            *{$fq_name} = \&_AUTOLOAD;
+            next
+        }
+
+        my $cmd = $name;
+        my @args;
         my %options;
         my $options = (@_ && ref $_[0]) ? shift : [];
         while (@$options) {
             my $opt = shift @$options;
             if ($opt eq '--') {
-                croak "duplicate \@ARGV" if $options{'@ARGV'};
+                _croak 'duplicate @ARGV' if $options{'@ARGV'};
                 $options{'@ARGV'} = $options;
-                last;
-            } elsif (exists ($OPTIONS{$opt}) {
-                carp "unknown option $opt"
+                last
+            } elsif ($opt eq '$0') {
+                $cmd = shift @$options;
+            } elsif ($opt eq '@ARGV') {
+                @args = @{ shift @$options };
+            } elsif (! exists ($OPTIONS{$opt})) {
+                _carp "unknown option $opt";
             } elsif (defined $OPTIONS{$opt}) {
                 my $value = shift @$options;
                 if (ref $OPTIONS{$opt}) {
-                    croak "invalid value for option $opt"
+                    _croak "invalid value for option $opt"
                 } elsif (ref($value) ne $OPTIONS{$opt}) {
-                    croak "invalid value for option $opt"
+                    _croak "invalid value for option $opt"
                 }
                 $options{$opt} = $value;
             } else {
                 $options{$opt} = 1;
             }
         }
-        $options{'@ARGV'} = [] unless exists $options{'@ARGV'};
-        $options{'$0'} = $name  unless exists $options{'$0'};
 
         my $sub;
 
         # The result might be undef
-        unless (my $cmdpath = File::Which::which(delete $options{'$0'}) {
-            $sub = sub { croak "'$cmd' not found in PATH" }
+        #unless (my $cmdpath = File::Which::which(delete $options{'$0'})) {
+        #unless (my $cmdpath = File::Which::which(delete $options{'$0'})) {
+        if (0) {
+            $sub = sub { _croak "'$name' not found in PATH" };
         } else {
-            $sub = 
+            $sub = _build_sub($name, [ $cmd, @args ], \%options);
         }
 
-        my $fq_name = $pkg.'::'.$name;
         no strict 'refs';
-        ${$fq_name} = Sub::Name::subname $fq_name, $sub;
+        *{$fq_name} = subname $fq_name, $sub;
     }
 }
+
+sub _build_sub
+{
+    my ($name, $cmd, $options) = @_;
+
+    return sub {
+        my ($input, $output_cb);
+        $output_cb = pop if ref $_[$#_] eq 'CODE';
+        $input = pop if ref $_[$#_];
+        my @cmd = (@$cmd, @_);
+        print join(' ', '[', (map { / / ? qq{"$_"} : $_ } @cmd), ']'), "\n";
+        my $h;
+        my $out = gensym; # IPC::Run needs GLOBs
+        if ($input) {
+            my $in = gensym;
+            $h = start \@cmd,
+                       '<pipe', $in, '>pipe', $out or die $!;
+            binmode($in, $options->{'>'}) if exists $options->{'>'};
+            if (ref $input eq 'ARRAY') {
+                print $in map { "$_$/" } @$input;
+            } elsif (ref $input eq 'SCALAR') {
+                # use ${$input}} as raw input
+                print $in $$input;
+            }
+            close $in;
+        } else {
+            $h = start \@cmd, \undef, '>pipe', $out or die $!;
+        }
+        binmode($out, $options->{'<'}) if exists $options->{'<'};
+        if (wantarray) {
+            my @output;
+            if ($output_cb) {
+                while (<$out>) {
+                    chomp;
+                    push @output, $output_cb->($_)
+                }
+            } else {
+                while (<$out>) {
+                    chomp;
+                    push @output, $_
+                }
+            }
+            close $out;
+            finish $h;
+            _croak "$name error ".($?>>8) if $? >> 8;
+            return @output
+        } elsif (defined wantarray) {
+            # Only the first line
+            my $output;
+            defined($output = <$out>) and chomp $output;
+            close $out;
+            finish $h;
+            _croak "$name error ".($?>>8) if $? >> 8;
+            _croak "no output" unless defined $output;
+            return $output
+        } else { # void context
+            if ($output_cb) {
+                while (<$out>) {
+                    chomp;
+                    $output_cb->($_)
+                }
+            }
+            close $out;
+            finish $h;
+            _croak "$name error ".($?>>8) if $? >> 8;
+            return
+        }
+    }
+}
+
+sub _AUTOLOAD
+{
+    no strict 'refs';
+    my $fq_name = our $AUTOLOAD;
+    my $name = substr($fq_name, 1+rindex($fq_name, ':'));
+    my $path = File::Which::which($name);
+    _croak "'$name' not found in PATH" unless defined $path;
+    *$fq_name = subname $name, _build_sub($name, [ $path ], { });
+    goto &$fq_name
+}
+
+
 
 1;
 __END__
