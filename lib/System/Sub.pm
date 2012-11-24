@@ -6,7 +6,7 @@ use File::Which ();
 use Sub::Name 'subname';
 use Symbol 'gensym';
 use IPC::Run qw(start finish);
-
+our @CARP_NOT;
 
 my %OPTIONS = (
     # Value is the expected ref of the option value
@@ -110,10 +110,15 @@ sub _build_sub
         print join(' ', '[', (map { / / ? qq{"$_"} : $_ } @cmd), ']'), "\n";
         my $h;
         my $out = gensym; # IPC::Run needs GLOBs
+
+        # errors from IPC::Run must be reported as comming from our
+        # caller, not from here
+        local @IPC::Run::CARP_NOT = (@IPC::Run::CARP_NOT, __PACKAGE__);
+
         if ($input) {
             my $in = gensym;
             $h = start \@cmd,
-                       '<pipe', $in, '>pipe', $out or die $!;
+                       '<pipe', $in, '>pipe', $out or _croak $!;
             binmode($in, $options->{'>'}) if exists $options->{'>'};
             if (ref $input eq 'ARRAY') {
                 print $in map { "$_$/" } @$input;
@@ -123,7 +128,7 @@ sub _build_sub
             }
             close $in;
         } else {
-            $h = start \@cmd, \undef, '>pipe', $out or die $!;
+            $h = start \@cmd, \undef, '>pipe', $out or _croak $!;
         }
         binmode($out, $options->{'<'}) if exists $options->{'<'};
         if (wantarray) {
