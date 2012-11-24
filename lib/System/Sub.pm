@@ -82,16 +82,16 @@ sub import
             }
         }
 
-        my $sub;
-
-        # The result might be undef
-        #unless (my $cmdpath = File::Which::which(delete $options{'$0'})) {
-        #unless (my $cmdpath = File::Which::which(delete $options{'$0'})) {
-        if (0) {
-            $sub = sub { _croak "'$name' not found in PATH" };
-        } else {
-            $sub = _build_sub($name, [ $cmd, ($args ? @$args : ())], \%options);
+        unless (File::Spec->file_name_is_absolute($cmd)) {
+            my ($vol, $dir, undef) = File::Spec->splitpath($cmd);
+            if (length($vol)+length($dir) == 0) {
+                $cmd = File::Which::which($cmd);
+            }
         }
+
+        my $sub = defined($cmd)
+                ? _build_sub($name, [ $cmd, ($args ? @$args : ())], \%options)
+                : sub { _croak "'$name' not found in PATH" };
 
         no strict 'refs';
         *{$fq_name} = subname $fq_name, $sub;
