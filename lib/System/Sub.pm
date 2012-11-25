@@ -198,12 +198,79 @@ System::Sub - Wraps external command with a DWIM sub
 
     use System::Sub 'hostname';  # Just an example (use Sys::Hostname instead)
 
-    # Scalar context : returns the first line of the output
+    # Scalar context : returns the first line of the output, without the line
+    # separator
     my $hostname = hostname;
+
+    # List context : returns a list of lines without their line separator
+    use System::Sub 'ls';
+    my @files = ls '-a';
+
+    # Process line by line
+    ls sub {
+        push @files, $_[0];
+    };
+
+    use System::Sub zenity; # a GTK+ dialog display
+    zenity --question
+        => --text => 'How are you today?'
+        => --ok-label => 'Fine!'
+        => --cancel-label => 'Tired.';
+    given ($?) {
+        when (0) {
+        }
+        when (1) {
+        }
+    }
 
 =head1 DESCRIPTION
 
 B<This is beta.> This documentation is either incomplete or wrong!
+
+C<System::Sub> declares in your package a sub that wraps the call to an external
+program. The return value is line(s) dependending on context (C<wantarray>).
+
+This may be what you need if you want to run external commands as easily
+as from a Unix shell script but with a perl-ish feel (contextual output). So
+this is not a universal module for running external programs (like L<IPC::Run>)
+but instead a simpler interface for a common style of external programs.
+
+C<System::Sub> may be useful if:
+
+=over 4
+
+=item *
+
+you want to run the command synchronously (like C<system> or backquotes)
+
+=item *
+
+the command
+
+=over 4
+
+=item -
+non-interactive (all the input is fed at start)
+
+=item -
+input is C<@ARGV> and C<STDIN>
+
+=item -
+output is C<STDOUT>
+
+=item -
+the exit code is what matters for errors
+
+=item -
+C<STDERR> will not be captured, and will go to C<STDERR> of your program.
+
+=back
+
+=back
+
+The underlying implementation is currently L<IPC::Run>, but there is no
+garantee that this will stay that way. L<IPC::Run> works well enough on both
+Unix and Win32, but it has its own bugs and is very slow.
 
 =head1 IMPORT OPTIONS
 
@@ -212,6 +279,8 @@ I<TODO>
 =head1 SUB USAGE
 
 =head2 Arguments
+
+I<TODO>
 
 =head2 Return value(s)
 
@@ -233,6 +302,32 @@ The end-of-line chars (C<$/> are not in the output.
 =back
 
 I<TODO>
+
+=head1 SEE ALSO
+
+=over 4
+
+=item * L<perlipc>, L<perlfaq8>
+
+=item * L<IPC::Run>
+
+=item * L<AnyEvent::Util::run|AnyEvent::Util>
+
+=item * L<System::Command>
+
+=item * L<Proc::Lite>
+
+=item * L<IPC::Open3>
+
+=item * L<Sys::Cmd>
+
+=item * L<System>
+
+=item * L<System2>
+
+=item * L<IPC::Cmd>
+
+=back
 
 =head1 TRIVIA
 
