@@ -57,27 +57,28 @@ sub import
             my $options = shift;
             while (@$options) {
                 my $opt = shift @$options;
+                (my $opt_short = $opt) =~ s/^[\$\@]//;
                 if ($opt eq '--') {
                     _croak 'duplicate @ARGV' if $args;
                     $args = $options;
                     last
-                } elsif ($opt eq '$0') {
+                } elsif ($opt =~ /^\$?0$/) { # $0
                     $cmd = shift @$options;
-                } elsif ($opt eq '@ARGV') {
-                    _croak 'invalid @ARGV' if ref($options->[0]) ne 'ARRAY';
+                } elsif ($opt =~ /^\@?ARGV$/) { # @ARGV
+                    _croak "$name: invalid @ARGV" if ref($options->[0]) ne 'ARRAY';
                     $args = shift @$options;
                 } elsif (! exists ($OPTIONS{$opt})) {
-                    _carp "unknown option $opt";
-                } elsif (defined $OPTIONS{$opt}) {
+                    _carp "$name: unknown option $opt";
+                } elsif (defined $OPTIONS{$opt_short}) {
                     my $value = shift @$options;
-                    if (ref $OPTIONS{$opt}) {
-                        _croak "invalid value for option $opt"
-                    } elsif (ref($value) ne $OPTIONS{$opt}) {
-                        _croak "invalid value for option $opt"
+                    unless (defined $value) {
+                        _croak "$name: value expected for option $opt"
+                    } elsif (ref($value) ne $OPTIONS{$opt_short}) {
+                        _croak "$name: invalid value for option $opt"
                     }
-                    $options{$opt} = $value;
+                    $options{$opt_short} = $value;
                 } else {
-                    $options{$opt} = 1;
+                    $options{$opt_short} = 1;
                 }
             }
         }
