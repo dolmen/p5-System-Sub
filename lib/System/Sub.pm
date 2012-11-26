@@ -13,6 +13,7 @@ my %OPTIONS = (
     # undef is no value
     '>' => '',
     '<' => '',
+    'ENV' => 'HASH',
 );
 
 sub _croak
@@ -115,6 +116,8 @@ sub _build_sub
         # errors from IPC::Run must be reported as comming from our
         # caller, not from here
         local @IPC::Run::CARP_NOT = (@IPC::Run::CARP_NOT, __PACKAGE__);
+
+        local %ENV = (%ENV, %{$options->{ENV}}) if exists $options->{ENV};
 
         if ($input) {
             my $in = gensym;
