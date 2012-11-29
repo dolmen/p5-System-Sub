@@ -7,7 +7,7 @@ use Test::More (-x '/bin/hostname' ? (tests => 2)
 
 {
     package cmd;
-    use System::Sub 'AUTOLOAD';
+    use System::Sub::AutoLoad;
 }
 
 my $expected = `hostname`;
