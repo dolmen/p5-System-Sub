@@ -28,10 +28,17 @@ sub _carp
     goto &Carp::carp
 }
 
+# Storage for sub options until they are installed with the AUTOLOAD
+my %AutoLoad;
+
 sub import
 {
     my $pkg = (caller)[0];
     shift;
+
+    # 1 if all subs up to the end of the list will be lazily loaded with
+    # AUTOLOAD
+    my $AutoLoad;
 
     while (@_) {
         my $name = shift;
@@ -48,6 +55,7 @@ sub import
         if ($name eq 'AUTOLOAD') {
             no strict 'refs';
             *{$fq_name} = \&_AUTOLOAD;
+            $AutoLoad = 1;
             next
         }
 
@@ -56,6 +64,12 @@ sub import
         my %options;
         if (@_ && ref $_[0]) {
             my $options = shift;
+
+            if ($AutoLoad) {
+                $AutoLoad{$fq_name} = $options;
+                $options = [];
+            }
+
             while (@$options) {
                 my $opt = shift @$options;
                 (my $opt_short = $opt) =~ s/^[\$\@]//;
@@ -82,6 +96,13 @@ sub import
                     $options{$opt_short} = 1;
                 }
             }
+        }
+
+        if ($AutoLoad) {
+            # Create a forward declaration that will be usable by the Perl
+            # parser. See subs.pm
+            *{$fq_name} = \&{$fq_name};
+            next
         }
 
         unless (File::Spec->file_name_is_absolute($cmd)) {
@@ -178,15 +199,14 @@ sub _build_sub
 
 sub _AUTOLOAD
 {
-    no strict 'refs';
     my $fq_name = our $AUTOLOAD;
-    my $name = substr($fq_name, 1+rindex($fq_name, ':'));
-    my $path = File::Which::which($name);
-    _croak "'$name' not found in PATH" unless defined $path;
-    *$fq_name = subname $name, _build_sub($name, [ $path ], { });
+
+    my $options = delete $AutoLoad{$fq_name};
+    __PACKAGE__->import($fq_name, $options ? ($options) : ());
+
+    no strict 'refs';
     goto &$fq_name
 }
-
 
 
 1;
