@@ -179,7 +179,7 @@ __END__
 
 =head1 NAME
 
-System::Sub - Wraps external command with a DWIM sub
+System::Sub - Wrap external command with a DWIM sub
 
 =head1 SYNOPSIS
 
@@ -212,7 +212,7 @@ System::Sub - Wraps external command with a DWIM sub
 
 =head1 DESCRIPTION
 
-B<This is beta.> This documentation is either incomplete or wrong!
+See also C<L<System::Sub::AutoLoad>> for even simpler usage.
 
 C<System::Sub> declares in your package a sub that wraps the call to an external
 program. The return value is line(s) dependending on context (C<wantarray>).
