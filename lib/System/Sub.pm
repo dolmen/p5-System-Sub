@@ -314,6 +314,13 @@ List context
 Returns a list of the lines of the output, based C<$/>.
 The end-of-line chars (C<$/> are not in the output.
 
+=item *
+
+Void context
+
+If you do not specify a callback, the behavior is currently unspecified
+(suggestions welcome).
+
 =back
 
 I<TODO>
