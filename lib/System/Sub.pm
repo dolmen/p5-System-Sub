@@ -330,6 +330,8 @@ I<TODO>
 
 =item * L<System::Command>
 
+=item * L<Sys::Cmd>
+
 =item * L<Proc::Lite>
 
 =item * L<IPC::Open3>
