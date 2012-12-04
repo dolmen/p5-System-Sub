@@ -194,16 +194,18 @@ System::Sub - Wrap external command with a DWIM sub
     my @files = ls '-a';
 
     # Process line by line
-    ls sub {
+    ls -a => sub {
         push @files, $_[0];
     };
 
     use System::Sub zenity; # a GTK+ dialog display
-    zenity --question
-        => --text => 'How are you today?'
-        => --ok-label => 'Fine!'
-        => --cancel-label => 'Tired.';
-    given ($?) {
+    eval {
+        zenity --question
+            => --text => 'How are you today?'
+            => --ok-label => 'Fine!'
+            => --cancel-label => 'Tired.'
+    };
+    given ($? >> 8) {
         when (0) {
         }
         when (1) {
@@ -267,7 +269,33 @@ I<TODO>
 
 =head2 Arguments
 
-I<TODO>
+The scalar arguments of the sub are directly passed as arguments of the
+command.
+
+The queue of the arguments may contain values of the following type (see
+L<perlfunc/ref>):
+
+=over 4
+
+=item * C<CODE>
+
+A sub that will be called for each line of the output. The argument is the
+C<chomp>-ed line.
+
+    sub {
+        my ($line)
+    }
+
+This argument must always be the last one.
+
+=item * C<REF>
+
+A reference to a scalar containing the full input of the command.
+
+=item * C<ARRAY>
+
+A reference to an array containing the lines of the input of the command.
+C<\n> will be appended at the end of each line.
 
 =head2 Return value(s)
 
