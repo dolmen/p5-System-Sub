@@ -185,8 +185,8 @@ System::Sub - Wrap external command with a DWIM sub
 
     use System::Sub 'hostname';  # Just an example (use Sys::Hostname instead)
 
-    # Scalar context : returns the first line of the output, without the line
-    # separator
+    # Scalar context : returns the first line of the output, without the
+    # line separator
     my $hostname = hostname;
 
     # List context : returns a list of lines without their line separator
@@ -198,7 +198,12 @@ System::Sub - Wrap external command with a DWIM sub
         push @files, $_[0];
     };
 
-    use System::Sub zenity; # a GTK+ dialog display
+    # Import with options
+    use System::Sub ssh => [ '$0' => '/usr/bin/ssh',
+                             '@ARGV' => [ qw< -o RequestTTY=no > ] ];
+
+    # Handle exit codes
+    use System::Sub 'zenity'; # a GTK+ dialog display
     eval {
         zenity --question
             => --text => 'How are you today?'
@@ -263,7 +268,37 @@ Unix and Win32, but it has its own bugs and is very slow.
 
 =head1 IMPORT OPTIONS
 
-I<TODO>
+Options can be set for the sub by passing an ARRAY just after the sub name
+on the C<use System::Sub> line.
+
+The sigil (C<$>, C<@>, C<%>) is optional.
+
+=over 4
+
+=item *
+
+C<$0>: the path to the executable file. It will be expanded from PATH if it
+doesn't contain a directory separator.
+
+=item *
+
+C<@ARGV>: command arguments that will be inserted before the arguments given
+to the sub. This is useful if the command always require a basic set of
+arguments.
+
+=item *
+
+C<%ENV>: environment variables to set for the command.
+
+=item *
+
+C<E<gt>>: I/O layers for the data fed to the command.
+
+=item *
+
+C<E<lt>>: I/O layers for the data read from the command output.
+
+=back
 
 =head1 SUB USAGE
 
@@ -322,8 +357,6 @@ If you do not specify a callback, the behavior is currently unspecified
 (suggestions welcome).
 
 =back
-
-I<TODO>
 
 =head1 SEE ALSO
 
