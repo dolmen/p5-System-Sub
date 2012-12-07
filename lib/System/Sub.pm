@@ -8,6 +8,12 @@ use Symbol 'gensym';
 use IPC::Run qw(start finish);
 our @CARP_NOT;
 
+BEGIN {
+    *DEBUG = $ENV{PERL_SYSTEM_SUB_DEBUG}
+           ? sub () { 1 }
+           : sub () { '' };
+}
+
 my %OPTIONS = (
     # Value is the expected ref of the option value
     # undef is no value
@@ -104,7 +110,10 @@ sub _build_sub
         $output_cb = pop if ref $_[$#_] eq 'CODE';
         $input = pop if ref $_[$#_];
         my @cmd = (@$cmd, @_);
-        print join(' ', '[', (map { / / ? qq{"$_"} : $_ } @cmd), ']'), "\n";
+
+        print join(' ', '[', (map { / / ? qq{"$_"} : $_ } @cmd), ']'), "\n"
+            if DEBUG;
+
         my $h;
         my $out = gensym; # IPC::Run needs GLOBs
 
