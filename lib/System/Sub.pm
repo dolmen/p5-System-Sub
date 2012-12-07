@@ -53,7 +53,7 @@ sub import
 
             while (@$options) {
                 my $opt = shift @$options;
-                (my $opt_short = $opt) =~ s/^[\$\@]//;
+                (my $opt_short = $opt) =~ s/^[\$\@\%]//;
                 if ($opt eq '--') {
                     _croak 'duplicate @ARGV' if $args;
                     $args = $options;
@@ -63,7 +63,7 @@ sub import
                 } elsif ($opt =~ /^\@?ARGV$/) { # @ARGV
                     _croak "$name: invalid @ARGV" if ref($options->[0]) ne 'ARRAY';
                     $args = shift @$options;
-                } elsif (! exists ($OPTIONS{$opt})) {
+                } elsif (! exists ($OPTIONS{$opt_short})) {
                     _carp "$name: unknown option $opt";
                 } elsif (defined $OPTIONS{$opt_short}) {
                     my $value = shift @$options;
