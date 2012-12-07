@@ -198,6 +198,13 @@ System::Sub - Wrap external command with a DWIM sub
         push @files, $_[0];
     };
 
+    use System::Sub 'df' => [ '@ARGV' => [ '-P' ] ]; # -P for POSIX
+    df => sub {
+        return if $. == 1; # Skip the header line
+        # Show the 6th and 5th columns
+        printf "%s: %s\n", (split / +/, $_[0])[5, 4];
+    };
+
     # Import with options
     use System::Sub ssh => [ '$0' => '/usr/bin/ssh',
                              '@ARGV' => [ qw< -o RequestTTY=no > ] ];
