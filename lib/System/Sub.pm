@@ -237,7 +237,7 @@ System::Sub - Wrap external command with a DWIM sub
 
 See also C<L<System::Sub::AutoLoad>> for even simpler usage.
 
-C<System::Sub> declares in your package a sub that wraps the call to an external
+C<System::Sub> provides in your package a sub that wraps the call to an external
 program. The return value is line(s) dependending on context (C<wantarray>).
 
 This may be what you need if you want to run external commands as easily
@@ -260,7 +260,7 @@ the command
 =over 4
 
 =item -
-non-interactive (all the input is fed at start)
+is non-interactive (all the input is fed at start)
 
 =item -
 input is C<@ARGV> and C<STDIN>
@@ -348,6 +348,8 @@ A reference to a scalar containing the full input of the command.
 A reference to an array containing the lines of the input of the command.
 C<\n> will be appended at the end of each line.
 
+=back
+
 =head2 Return value(s)
 
 =over 4
@@ -417,7 +419,8 @@ L<github-keygen|https://github.com/github-keygen> project. I wrote the first
 version of the wrapper there, and quickly extracted it as this module.
 So, here is it!
 
-Last but not least, the pun in the package name is intended.
+Last but not least, the L<pun|https://en.wiktionary.org/wiki/sub-system#English>
+in the package name is intended.
 
 =head1 AUTHOR
 
