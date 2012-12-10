@@ -67,7 +67,7 @@ sub import
                 } elsif ($opt =~ /^\$?0$/) { # $0
                     $cmd = shift @$options;
                 } elsif ($opt =~ /^\@?ARGV$/) { # @ARGV
-                    _croak "$name: invalid @ARGV" if ref($options->[0]) ne 'ARRAY';
+                    _croak "$name: invalid \@ARGV" if ref($options->[0]) ne 'ARRAY';
                     $args = shift @$options;
                 } elsif (! exists ($OPTIONS{$opt_short})) {
                     _carp "$name: unknown option $opt";
