@@ -332,7 +332,7 @@ A sub that will be called for each line of the output. The argument is the
 C<chomp>-ed line.
 
     sub {
-        my ($line)
+        my ($line) = @_;
     }
 
 This argument must always be the last one.
