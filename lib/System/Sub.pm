@@ -8,11 +8,9 @@ use Symbol 'gensym';
 use IPC::Run qw(start finish);
 our @CARP_NOT;
 
-BEGIN {
-    *DEBUG = $ENV{PERL_SYSTEM_SUB_DEBUG}
-           ? sub () { 1 }
-           : sub () { '' };
-}
+use constant DEBUG => !! $ENV{PERL_SYSTEM_SUB_DEBUG};
+
+
 
 my %OPTIONS = (
     # Value is the expected ref of the option value
