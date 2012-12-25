@@ -7,4 +7,6 @@ perl:
 install:
     - dzil authordeps --missing | cpanm || { cat ~/.cpanm/build.log ; false ; }
     - dzil listdeps --author --missing | cpanm
-script: "dzil test --author --release"
+script:
+    - dzil test --author --release
+    - dzil xtest
