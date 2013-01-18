@@ -424,6 +424,13 @@ in the package name is intended.
 
 Olivier MenguE<eacute>, C<dolmen@cpan.org>.
 
+=head1 CONTRIBUTORS
+
+Philippe Bruhat (L<BOOK|https://metacpan.org/author/BOOK>).
+
+See the L<Git log|https://github.com/dolmen/p5-System-Sub/commits/master> for
+details.
+
 =head1 COPYRIGHT & LICENSE
 
 Copyright E<copy> 2012 Olivier MenguE<eacute>.
