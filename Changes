@@ -1,6 +1,7 @@
 Revision history for System-Sub.
 
 {{$NEXT}}
+	Add option '()' to define the prototype of the sub.
 
 0.130180     2013-01-18    DOLMEN (Olivier Mengué)
 	Minor fixes from BOOK (Philippe Bruhat).
