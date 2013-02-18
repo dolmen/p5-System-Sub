@@ -20,6 +20,7 @@ my %OPTIONS = (
     '>' => '',
     '<' => '',
     'ENV' => 'HASH',
+    '?' => 'CODE',
 );
 
 sub _croak
@@ -62,14 +63,14 @@ sub import
 
             while (@$options) {
                 my $opt = shift @$options;
-                (my $opt_short = $opt) =~ s/^[\$\@\%]//;
+                (my $opt_short = $opt) =~ s/^[\$\@\%\&]//;
                 if ($opt eq '--') {
                     _croak 'duplicate @ARGV' if $args;
                     $args = $options;
                     last
                 } elsif ($opt eq '()') {
                     $proto = shift @$options;
-                } elsif ($opt =~ /^\$?0$/) { # $0
+                } elsif ($opt =~ /^\$?0$/s) { # $0
                     $cmd = shift @$options;
                 } elsif ($opt =~ /^\@?ARGV$/) { # @ARGV
                     _croak "$name: invalid \@ARGV" if ref($options->[0]) ne 'ARRAY';
@@ -107,6 +108,16 @@ sub import
 
         no strict 'refs';
         *{$fq_name} = subname $fq_name, $sub;
+    }
+}
+
+sub _handle_error
+{
+    my ($name, $code, $cmd, $handler) = @_;
+    if ($handler) {
+        $handler->($name, $?, $cmd);
+    } else {
+        _croak "$name error ".($?>>8)
     }
 }
 
@@ -163,7 +174,7 @@ sub _build_sub
             }
             close $out;
             finish $h;
-            _croak "$name error ".($?>>8) if $? >> 8;
+            _handle_error($name, $?, \@cmd, $options->{'?'}) if $? >> 8;
             return @output
         } elsif (defined wantarray) {
             # Only the first line
@@ -171,7 +182,7 @@ sub _build_sub
             defined($output = <$out>) and chomp $output;
             close $out;
             finish $h;
-            _croak "$name error ".($?>>8) if $? >> 8;
+            _handle_error($name, $?, \@cmd, $options->{'?'}) if $? >> 8;
             _croak "no output" unless defined $output;
             return $output
         } else { # void context
@@ -183,7 +194,7 @@ sub _build_sub
             }
             close $out;
             finish $h;
-            _croak "$name error ".($?>>8) if $? >> 8;
+            _handle_error($name, $?, \@cmd, $options->{'?'}) if $? >> 8;
             return
         }
     }
@@ -244,6 +255,7 @@ System::Sub - Wrap external command with a DWIM sub
 
     # Import with a prototype (see perlsub)
     use System::Sub 'hostname()';  # Empty prototype: no args allowed
+    use System::Sub hostname => [ '()' => '' ];  # Alternate syntax
     use strict;
     # This will fail at compile time with "Too many arguments"
     hostname("xx");
@@ -333,6 +345,23 @@ C<E<gt>>: I/O layers for the data fed to the command.
 =item *
 
 C<E<lt>>: I/O layers for the data read from the command output.
+
+=item *
+
+C<&?>: sub that will be called if ($? >> 8) != 0.
+
+    sub {
+        my $name = shift; # name of the sub
+        my $code = shift; # exit code ($?)
+        my $cmd = shift;  # array ref to the executed command
+
+        # Default implementation:
+        require Carp;
+        Carp::croak("$name error ".($code >> 8));
+    }
+
+Mnemonic: C<&> is the sigil for subs and C<$?> is the exit code of the last
+command.
 
 =back
 

@@ -1,6 +1,7 @@
 Revision history for System-Sub.
 
 {{$NEXT}}
+	Add option '&?' to handle exit code != 0.
 
 0.130210     2013-01-21    DOLMEN (Olivier Mengué)
 	Add option '()' to define the prototype of the sub.
