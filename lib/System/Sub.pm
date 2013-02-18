@@ -40,6 +40,9 @@ sub import
     my $pkg = (caller)[0];
     shift;
 
+    my $common_options;
+    $common_options = shift if @_ && ref($_[0]) eq 'ARRAY';
+
     while (@_) {
         my $name = shift;
         # Must be a scalar
@@ -55,17 +58,25 @@ sub import
             $fq_name = $pkg.'::'.$name;
         }
 
+        my $options;
+        if (@_ && ref $_[0]) {
+            $options = shift;
+            splice(@$options, 0, 0, @$common_options) if $common_options;
+        } elsif ($common_options) {
+            # Just duplicate common options
+            $options = [ @$common_options ];
+        }
+
         my $cmd = $name;
         my $args;
         my %options;
-        if (@_ && ref $_[0]) {
-            my $options = shift;
 
+        if ($options) {
             while (@$options) {
                 my $opt = shift @$options;
                 (my $opt_short = $opt) =~ s/^[\$\@\%\&]//;
                 if ($opt eq '--') {
-                    _croak 'duplicate @ARGV' if $args;
+                    _croak 'duplicate @ARGV' if $args && !$common_options;
                     $args = $options;
                     last
                 } elsif ($opt eq '()') {
