@@ -440,6 +440,8 @@ If you do not specify a callback, the behavior is currently unspecified
 
 =over 4
 
+=item * L<Shell>, distributed with Perl 5 to 5.14. Removed from core in 5.16.
+
 =item * L<perlipc>, L<perlfaq8>
 
 =item * L<IPC::Run>
