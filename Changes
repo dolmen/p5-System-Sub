@@ -1,6 +1,8 @@
 Revision history for System-Sub.
 
 {{$NEXT}}
+
+0.142280     2014-08-16    DOLMEN (Olivier Mengué)
 	Add option '&?' to handle exit code != 0.
 	Add common options (an ARRAY as first import arg) that will apply
           to all the commands on the import list.
