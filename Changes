@@ -4,6 +4,7 @@ Revision history for System-Sub.
 	Add option '&?' to handle exit code != 0.
 	Add common options (an ARRAY as first import arg) that will apply
           to all the commands on the import list.
+	Doc: add link to Shell.pm (Thanks Slaven Rezic, RT#84739).
 
 0.130210     2013-01-21    DOLMEN (Olivier Mengué)
 	Add option '()' to define the prototype of the sub.
