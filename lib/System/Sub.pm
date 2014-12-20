@@ -464,6 +464,8 @@ If you do not specify a callback, the behavior is currently unspecified
 
 =item * L<IPC::Cmd>
 
+=item * L<Capture::Tiny>
+
 =back
 
 =head1 TRIVIA
