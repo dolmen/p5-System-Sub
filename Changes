@@ -1,6 +1,8 @@
 Revision history for System-Sub.
 
 {{$NEXT}}
+	Fix metadata: add back the source repository on GitHub
+	POD: add more SEE ALSO links (Shell, Capture::Tiny)
 
 0.142280     2014-08-16    DOLMEN (Olivier Mengué)
 	Add option '&?' to handle exit code != 0.
