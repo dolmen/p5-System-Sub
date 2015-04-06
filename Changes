@@ -1,6 +1,8 @@
 Revision history for System-Sub.
 
 {{$NEXT}}
+
+0.150960     2015-04-06    DOLMEN (Olivier Mengué)
 	Fix metadata: add back the source repository on GitHub
 	POD: add more SEE ALSO links (Shell, Capture::Tiny)
 
