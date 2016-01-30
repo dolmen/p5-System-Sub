@@ -10,7 +10,7 @@ perl:
 sudo: false
 install:
     - cpanm Dist::Zilla::App::Command::xtest || { cat ~/.cpanm/build.log ; false ; }
-    - dzil authordeps --missing | cpanm || { cat ~/.cpanm/build.log ; false ; }
+    - dzil authordeps --missing | cpanm --notest || { cat ~/.cpanm/build.log ; false ; }
     - dzil listdeps --author --missing | cpanm || { cat ~/.cpanm/build.log ; false ; }
 script:
     - dzil test --author --release
