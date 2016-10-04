@@ -173,14 +173,15 @@ sub _build_sub
         if (wantarray) {
             my @output;
             if ($output_cb) {
+                local $_;
                 while (<$out>) {
                     chomp;
                     push @output, $output_cb->($_)
                 }
             } else {
-                while (<$out>) {
-                    chomp;
-                    push @output, $_
+                while (my $x = <$out>) {
+                    chomp $x;
+                    push @output, $x
                 }
             }
             close $out;
@@ -198,6 +199,7 @@ sub _build_sub
             return $output
         } else { # void context
             if ($output_cb) {
+                local $_;
                 while (<$out>) {
                     chomp;
                     $output_cb->($_)
