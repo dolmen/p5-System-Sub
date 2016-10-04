@@ -1,6 +1,7 @@
 Revision history for System-Sub.
 
 {{$NEXT}}
+	Fix $_ corruption by wrapper subs (RT#118114 reported by BooK).
 
 0.150960     2015-04-06    DOLMEN (Olivier Mengué)
 	Fix metadata: add back the source repository on GitHub
