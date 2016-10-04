@@ -15,6 +15,7 @@ my $got = hostname;
 is($got, $expected, 'scalar context');
 is($_, 'canary', '$_ not changed');
 
+$_ = 'canary';
 my @got = hostname;
 is_deeply(\@got, [ $expected ], 'list context');
 is($_, 'canary', '$_ not changed');
