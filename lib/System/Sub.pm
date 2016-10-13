@@ -179,9 +179,10 @@ sub _build_sub
                     push @output, $output_cb->($_)
                 }
             } else {
-                while (my $x = <$out>) {
-                    chomp $x;
-                    push @output, $x
+                local $_;
+                while (<$out>) {
+                    chomp;
+                    push @output, $_
                 }
             }
             close $out;
